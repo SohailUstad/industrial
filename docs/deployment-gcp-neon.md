@@ -18,7 +18,7 @@
 
 Cloud Run also exposes a stable hash-based URL for each service. Use `gcloud run services describe` to read the displayed URL. All URLs currently require GCP invoker identity. When testing with an identity token, send it as `X-Serverless-Authorization: Bearer ...` so Spring Security does not treat it as the marketplace admin JWT.
 
-The backend CI/CD definition is [../cloudbuild.yaml](../cloudbuild.yaml): one `main` branch build that tests, builds, and deploys the four Spring services. The GitHub repository has not yet been connected to Cloud Build, so no automatic trigger exists. The first Cloud Run deployment was performed from local source.
+The backend CI/CD definition is [../cloudbuild.yaml](../cloudbuild.yaml): one `main` branch build that tests, builds, and deploys the four Spring services. A manual run of this pipeline succeeded on 2026-11-06 (Cloud Build ID `a7d013b4-37ae-40cf-9647-87a03742cadc`), and all four redeployed services returned `UP` from `/actuator/health`. The GitHub repository has not yet been connected to Cloud Build, so no automatic trigger exists. The first Cloud Run deployment was performed from local source.
 
 ## Service order and configuration
 
@@ -42,4 +42,4 @@ gcloud run services describe catalog-service --region=REGION --project=project-2
 
 Repeat for `auth-service`, `sourcing-service`, and `order-service`. The Android app uses catalog and order URLs; the React admin app also uses auth and sourcing URLs. A single public API hostname would require an API gateway or reverse proxy, which is not in the current implementation.
 
-The current React app calls the sourcing service directly, so its Cloud Run endpoint would need to be reachable by browsers while the `/api/admin/**` routes enforce JWT. Automatic approval review rejected granting `allUsers` invoker access to the auth service because that would expose login without rate limiting. All services remain private. Private auth also prevents the data services from fetching JWKS without an additional service-to-service IAM flow. Public checkout still needs abuse protection and customer identity or another secure order lookup design before launch.
+The current React app calls the sourcing service directly, so its Cloud Run endpoint would need to be reachable by browsers while the `/api/admin/**` routes enforce JWT. Automatic approval review rejected granting `allUsers` invoker access to the auth service because that would expose login without rate limiting. All services remain private. Private auth prevents the data services from fetching JWKS, and private catalog prevents orders from calling it, unless service-to-service IAM is added. Public checkout still needs abuse protection and customer identity or another secure order lookup design before launch.
