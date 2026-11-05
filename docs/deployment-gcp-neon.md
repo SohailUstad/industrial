@@ -5,13 +5,25 @@
 - gcloud account: `nobisystems.com@gmail.com` (already active)
 - GCP project visible to that account: `project-22d3e250-6dee-4cfa-bfb` (`My First Project`), with billing enabled
 - The saved gcloud default project is `nooriclasses`, so every deployment command must include `--project=project-22d3e250-6dee-4cfa-bfb` and `--account=nobisystems.com@gmail.com`.
-- Cloud Run, Cloud Build, Artifact Registry, and Secret Manager APIs are not enabled yet.
-- Neon organization: `clockskew`, Free plan, zero projects. No database or Cloud Run service has been created yet.
+- Cloud Run, Cloud Build, Artifact Registry, Secret Manager, and IAM APIs are enabled in that project.
+- Neon organization: `clockskew`, Free plan. Project `bitter-rain-34500292` is in `aws-ap-southeast-1` with separate `catalog`, `sourcing`, and `orders` databases.
+- The four backend services are deployed privately in `asia-southeast1`. Each data service has the `postgres` profile and a scoped Neon database role. Flyway created its tables in Neon.
+
+| Service | Private Cloud Run URL |
+| --- | --- |
+| Auth | `https://industrial-auth-1057772201167.asia-southeast1.run.app` |
+| Catalog | `https://industrial-catalog-1057772201167.asia-southeast1.run.app` |
+| Sourcing | `https://industrial-sourcing-1057772201167.asia-southeast1.run.app` |
+| Orders | `https://industrial-orders-1057772201167.asia-southeast1.run.app` |
+
+Cloud Run also exposes a stable hash-based URL for each service. Use `gcloud run services describe` to read the displayed URL. All URLs currently require GCP invoker identity. When testing with an identity token, send it as `X-Serverless-Authorization: Bearer ...` so Spring Security does not treat it as the marketplace admin JWT.
+
+The backend CI/CD definition is [../cloudbuild.yaml](../cloudbuild.yaml): one `main` branch build that tests, builds, and deploys the four Spring services. The GitHub repository has not yet been connected to Cloud Build, so no automatic trigger exists. The first Cloud Run deployment was performed from local source.
 
 ## Service order and configuration
 
 1. Choose a Neon region and a nearby Cloud Run region; confirm the placement before creating the Neon project. Create one Neon project with separate `catalog`, `sourcing`, and `orders` databases and database roles. The three databases share that project's Free plan compute and storage limits. Keep product images outside PostgreSQL.
-2. Obtain each database's pooled Neon host, database name, role, and password. Store a **JDBC** URL such as `jdbc:postgresql://NEON-POOLER-HOST:5432/catalog?sslmode=verify-full` and the role/password as separate GCP Secret Manager secrets. Validate certificate verification against the selected Neon endpoint before deployment. Do not put credentials into source files or gcloud command arguments.
+2. Obtain each database's pooled Neon host, database name, role, and password. Set a **JDBC** URL such as `jdbc:postgresql://NEON-POOLER-HOST:5432/catalog?sslmode=verify-full&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory`; store the password in GCP Secret Manager. The Java SSL factory uses the JVM trust store for certificate validation. Do not put passwords into source files or gcloud command arguments.
 3. Enable `run.googleapis.com`, `cloudbuild.googleapis.com`, `artifactregistry.googleapis.com`, and `secretmanager.googleapis.com` on the target project. Create runtime service accounts and give them access only to the secrets they need.
 4. Generate a persistent RSA signing key pair. Store the private key, public key, and admin password hash in Secret Manager. Deploy `auth-service` from its folder's Dockerfile with the key secrets mounted as files. Retrieve its Cloud Run HTTPS URL, set `JWT_ISSUER` to that URL, and update the auth service. `AUTH_DEV_EPHEMERAL_KEYS` must remain false.
 5. Deploy `catalog-service` and `sourcing-service` from their own folders. Set `SPRING_PROFILES_ACTIVE=postgres`; provide each service's own `DB_URL`, `DB_USER`, and `DB_PASSWORD` through Secret Manager. Set `JWT_ISSUER` to the auth URL and `AUTH_JWKS_URI` to `AUTH_URL/.well-known/jwks.json`. Flyway runs the service's migrations on startup. A missing PostgreSQL secret fails startup rather than falling back to the local H2 profile.
@@ -30,4 +42,4 @@ gcloud run services describe catalog-service --region=REGION --project=project-2
 
 Repeat for `auth-service`, `sourcing-service`, and `order-service`. The Android app uses catalog and order URLs; the React admin app also uses auth and sourcing URLs. A single public API hostname would require an API gateway or reverse proxy, which is not in the current implementation.
 
-The current React app calls the sourcing service directly, so its Cloud Run endpoint needs to be reachable by browsers while the `/api/admin/**` routes enforce JWT. Keeping the entire sourcing service private behind Cloud Run IAM requires an admin backend or gateway; add that before production use. Public checkout still needs abuse protection and customer identity or another secure order lookup design.
+The current React app calls the sourcing service directly, so its Cloud Run endpoint would need to be reachable by browsers while the `/api/admin/**` routes enforce JWT. Automatic approval review rejected granting `allUsers` invoker access to the auth service because that would expose login without rate limiting. All services remain private. Private auth also prevents the data services from fetching JWKS without an additional service-to-service IAM flow. Public checkout still needs abuse protection and customer identity or another secure order lookup design before launch.

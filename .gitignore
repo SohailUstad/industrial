@@ -12,4 +12,5 @@
 **/*.pem
 **/*.key
 .neon/
+**/__pycache__/
 **/.DS_Store

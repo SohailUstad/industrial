@@ -1,0 +1,48 @@
+# One main-branch pipeline for the four Spring services.
+steps:
+  - name: maven:3.9-eclipse-temurin-21
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -eu
+        for service in auth-service catalog-service sourcing-service order-service; do
+          (cd "$$service" && mvn -q test)
+        done
+
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -eu
+        for service in auth catalog sourcing orders; do
+          case "$$service" in
+            auth) directory=auth-service ;;
+            catalog) directory=catalog-service ;;
+            sourcing) directory=sourcing-service ;;
+            orders) directory=order-service ;;
+          esac
+          image="asia-southeast1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/industrial-$$service:$COMMIT_SHA"
+          docker build -t "$$image" "$$directory"
+          docker push "$$image"
+        done
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:stable
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -eu
+        for service in auth catalog sourcing orders; do
+          image="asia-southeast1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/industrial-$$service:$COMMIT_SHA"
+          if [ "$$service" = auth ]; then
+            gcloud run deploy "industrial-$$service" --image="$$image" --region=asia-southeast1 --project=$PROJECT_ID --quiet
+          else
+            gcloud run deploy "industrial-$$service" --image="$$image" --region=asia-southeast1 --project=$PROJECT_ID --update-env-vars=SPRING_PROFILES_ACTIVE=postgres --quiet
+          fi
+        done
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1800s
