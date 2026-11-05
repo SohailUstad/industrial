@@ -1,0 +1,15 @@
+**/target/
+**/node_modules/
+**/.npm-cache/
+**/build/
+**/.gradle/
+**/.idea/
+**/local.properties
+**/.env.local
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+.neon/
+**/.DS_Store

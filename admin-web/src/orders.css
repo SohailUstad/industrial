@@ -1,0 +1,10 @@
+.order-card { border: 1px solid #e2eae6; border-radius: 13px; padding: 17px; margin-top: 12px; background: #fbfcfb; }
+.order-title { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.order-title strong { font-size: 14px; }
+.order-title span { display: block; font-size: 11px; color: #7b8985; margin-top: 4px; }
+.order-title b { white-space: nowrap; }
+.order-address, .order-items { font-size: 12px; color: #50625f; margin: 10px 0 0; }
+.order-footer { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 11px; color: #7b8985; flex-wrap: wrap; }
+.order-footer .row-actions { margin-left: auto; }
+.status-chip { background: #e7f5ec; color: #176e68; border-radius: 20px; padding: 6px 9px; font-weight: 800; }
+.order-footer .row-actions button { text-transform: capitalize; font-size: 11px; }

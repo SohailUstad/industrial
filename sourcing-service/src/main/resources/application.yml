@@ -1,0 +1,36 @@
+server:
+  port: ${PORT:8082}
+logging:
+  level:
+    root: INFO
+spring:
+  datasource:
+    url: jdbc:h2:mem:sourcing;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+app:
+  jwt:
+    jwks-uri: ${AUTH_JWKS_URI:http://localhost:8084/.well-known/jwks.json}
+    issuer: ${JWT_ISSUER:http://localhost:8084}
+    audience: homerun-admin
+  cors-origin: ${ADMIN_ORIGIN:http://localhost:3000}
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5

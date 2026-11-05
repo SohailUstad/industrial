@@ -1,0 +1,22 @@
+server:
+  port: ${PORT:8084}
+logging:
+  level:
+    root: INFO
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+app:
+  cors-origin: ${ADMIN_ORIGIN:http://localhost:3000}
+  jwt:
+    issuer: ${JWT_ISSUER:http://localhost:8084}
+    audience: homerun-admin
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:}
+    dev-ephemeral-keys: ${AUTH_DEV_EPHEMERAL_KEYS:false}
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password-hash: ${ADMIN_PASSWORD_HASH:}
+    dev-password: ${ADMIN_PASSWORD:}
