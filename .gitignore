@@ -9,6 +9,8 @@
 **/.env
 **/.env.*
 !**/.env.example
+**/firebase-debug.log
+**/.firebase/
 **/*.pem
 **/*.key
 .neon/

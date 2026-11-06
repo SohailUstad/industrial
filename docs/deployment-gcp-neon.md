@@ -3,7 +3,8 @@
 ## Target checked on 2026-11-06
 
 - gcloud account: `nobisystems.com@gmail.com` (already active)
-- GCP project visible to that account: `project-22d3e250-6dee-4cfa-bfb` (`My First Project`), with billing enabled
+- Backend GCP project: `project-22d3e250-6dee-4cfa-bfb` (`My First Project`), with billing enabled
+- Separate Firebase Hosting project under the same account: `nobisystems-industrial-admin` (`Industrial Marketplace Admin`).
 - The saved gcloud default project is `nooriclasses`, so every deployment command must include `--project=project-22d3e250-6dee-4cfa-bfb` and `--account=nobisystems.com@gmail.com`.
 - Cloud Run, Cloud Build, Artifact Registry, Secret Manager, and IAM APIs are enabled in that project.
 - Neon organization: `clockskew`, Free plan. Project `bitter-rain-34500292` is in `aws-ap-southeast-1` with separate `catalog`, `sourcing`, and `orders` databases.
@@ -19,6 +20,19 @@
 Cloud Run also exposes a stable hash-based URL for each service. Use `gcloud run services describe` to read the displayed URL. Public product reads, admin JWT calls, and catalog validation during checkout have been verified. Admin routes still require a valid marketplace JWT. The React app uses the four URLs above, and the Android app uses catalog and orders. The hosted catalog currently has no products.
 
 The backend CI/CD definition is [../cloudbuild.yaml](../cloudbuild.yaml): one `main` branch build that tests, builds, and deploys the four Spring services. A manual run of this pipeline succeeded on 2026-11-06 (Cloud Build ID `a7d013b4-37ae-40cf-9647-87a03742cadc`), and all four redeployed services returned `UP` from `/actuator/health`. The GitHub repository has not yet been connected to Cloud Build, so no automatic trigger exists. The first Cloud Run deployment was performed from local source.
+
+## React admin hosting
+
+The React admin build is deployed to **https://nobisystems-industrial-admin.web.app** with Firebase Hosting. The Hosting configuration is in [../admin-web/firebase.json](../admin-web/firebase.json). All four backend services have `ADMIN_ORIGIN=https://nobisystems-industrial-admin.web.app`. The hosted page, browser CORS preflights, admin login, and the product, vendor, offer, and order admin reads were verified on 2026-11-06.
+
+To redeploy the React app manually from `admin-web`, using only the requested Google account:
+
+```powershell
+npm run build
+firebase deploy --only hosting --project=nobisystems-industrial-admin --account=nobisystems.com@gmail.com
+```
+
+No automatic frontend or backend deployment trigger is configured.
 
 ## Service order and configuration
 

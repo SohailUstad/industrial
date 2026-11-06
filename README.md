@@ -15,11 +15,11 @@ Fresh implementation of a product-first industrial supply marketplace. Customers
 
 The services own separate databases. `productId` in the sourcing service is a reference to the catalog service; there is no cross-database foreign key. See [docs/architecture.md](docs/architecture.md) for the data model, service boundaries, GCP path, and launch decisions.
 
-The checked GCP account, project, Neon prerequisites, deployment order, and Cloud Run URL command are in [docs/deployment-gcp-neon.md](docs/deployment-gcp-neon.md).
+The checked GCP account, projects, Neon configuration, and deployment URLs are in [docs/deployment-gcp-neon.md](docs/deployment-gcp-neon.md).
 
 The Android and React apps now use the public Cloud Run URLs by default. The Android app calls catalog and orders; the React admin app calls auth, catalog, sourcing, and orders. The hosted catalog starts empty, so add products in the admin app before browsing or checking out as a customer. Admin credentials are stored in GCP Secret Manager, not in this repository.
 
-To use the hosted backend from a fresh terminal, run `npm start` in `admin-web`; its default URLs already point at Cloud Run. The admin web app is served locally at `http://localhost:3000`. Open `customer-android` in Android Studio and run the debug app, or install `customer-android/app/build/outputs/apk/debug/app-debug.apk`. Both Android build types use the same hosted API defaults.
+The React admin app is hosted at **https://nobisystems-industrial-admin.web.app**. To run the admin app locally, use the local service commands and URL overrides below. Open `customer-android` in Android Studio and run the debug app, or install `customer-android/app/build/outputs/apk/debug/app-debug.apk`. Both Android build types use the same hosted API defaults.
 
 To check the signed-in Neon organization's plan and project count, run `python scripts/neon_status.py` from this folder. This read-only helper uses the Neon CLI login, downloads the CLI through `npx` if needed, and accepts `--org-id` when multiple organizations are available. Use `--json` for machine-readable output. Per-project compute, storage, and transfer usage is available in the Neon Console.
 

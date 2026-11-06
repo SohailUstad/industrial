@@ -49,7 +49,7 @@ The MVP uses cash on delivery and a zero delivery fee. Stock is checked manually
 1. Containerize each Spring Boot service and deploy to Cloud Run in a region near users and the selected Neon region.
 2. Create separate catalog, sourcing, and orders PostgreSQL databases and roles in Neon. Give each service credentials only for its database. Use Neon's pooled endpoints for application traffic, small Hikari pools, and Cloud Run maximum-instance caps. Use direct connections for schema migration jobs if pooled connections cause migration or session-state issues.
 3. Store product images in Cloud Storage and serve them through a CDN. Mount the auth signing key and admin password from Secret Manager; give each Cloud Run service a distinct service account.
-4. Host the React static build on Firebase Hosting or Cloud Storage with HTTPS. The Android app calls the public catalog and order APIs over HTTPS.
+4. The React static build is hosted on Firebase Hosting at `https://nobisystems-industrial-admin.web.app`. The Android app calls the public catalog and order APIs over HTTPS.
 5. Before production, set stable signing keys and an HTTPS issuer, put staff identity lifecycle and login abuse protection in place, and use a controlled public API entry point. Add an admin backend or gateway before making the sourcing Cloud Run service private with service-to-service IAM; the current React app calls it directly. Add Cloud Logging, Monitoring, alerts, and verify Neon backup and recovery settings.
 6. Add Cloud Tasks for single-recipient background work such as allocation or notifications; use Pub/Sub only when multiple independent consumers need the same business event.
 
