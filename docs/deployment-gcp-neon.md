@@ -7,16 +7,16 @@
 - The saved gcloud default project is `nooriclasses`, so every deployment command must include `--project=project-22d3e250-6dee-4cfa-bfb` and `--account=nobisystems.com@gmail.com`.
 - Cloud Run, Cloud Build, Artifact Registry, Secret Manager, and IAM APIs are enabled in that project.
 - Neon organization: `clockskew`, Free plan. Project `bitter-rain-34500292` is in `aws-ap-southeast-1` with separate `catalog`, `sourcing`, and `orders` databases.
-- The four backend services are deployed privately in `asia-southeast1`. Each data service has the `postgres` profile and a scoped Neon database role. Flyway created its tables in Neon.
+- The four backend services are deployed with public Cloud Run invoker access in `asia-southeast1`. Each data service has the `postgres` profile and a scoped Neon database role. Flyway created its tables in Neon.
 
-| Service | Private Cloud Run URL |
+| Service | Public Cloud Run URL |
 | --- | --- |
 | Auth | `https://industrial-auth-1057772201167.asia-southeast1.run.app` |
 | Catalog | `https://industrial-catalog-1057772201167.asia-southeast1.run.app` |
 | Sourcing | `https://industrial-sourcing-1057772201167.asia-southeast1.run.app` |
 | Orders | `https://industrial-orders-1057772201167.asia-southeast1.run.app` |
 
-Cloud Run also exposes a stable hash-based URL for each service. Use `gcloud run services describe` to read the displayed URL. All URLs currently require GCP invoker identity. When testing with an identity token, send it as `X-Serverless-Authorization: Bearer ...` so Spring Security does not treat it as the marketplace admin JWT.
+Cloud Run also exposes a stable hash-based URL for each service. Use `gcloud run services describe` to read the displayed URL. Public product reads, admin JWT calls, and catalog validation during checkout have been verified. Admin routes still require a valid marketplace JWT. The React app uses the four URLs above, and the Android app uses catalog and orders. The hosted catalog currently has no products.
 
 The backend CI/CD definition is [../cloudbuild.yaml](../cloudbuild.yaml): one `main` branch build that tests, builds, and deploys the four Spring services. A manual run of this pipeline succeeded on 2026-11-06 (Cloud Build ID `a7d013b4-37ae-40cf-9647-87a03742cadc`), and all four redeployed services returned `UP` from `/actuator/health`. The GitHub repository has not yet been connected to Cloud Build, so no automatic trigger exists. The first Cloud Run deployment was performed from local source.
 
@@ -42,4 +42,4 @@ gcloud run services describe catalog-service --region=REGION --project=project-2
 
 Repeat for `auth-service`, `sourcing-service`, and `order-service`. The Android app uses catalog and order URLs; the React admin app also uses auth and sourcing URLs. A single public API hostname would require an API gateway or reverse proxy, which is not in the current implementation.
 
-The current React app calls the sourcing service directly, so its Cloud Run endpoint would need to be reachable by browsers while the `/api/admin/**` routes enforce JWT. Automatic approval review rejected granting `allUsers` invoker access to the auth service because that would expose login without rate limiting. All services remain private. Private auth prevents the data services from fetching JWKS, and private catalog prevents orders from calling it, unless service-to-service IAM is added. Public checkout still needs abuse protection and customer identity or another secure order lookup design before launch.
+The user authorized public access after the initial automatic approval rejection. All four Cloud Run services now allow unauthenticated requests through Cloud Run IAM; Spring Security still requires a marketplace JWT for `/api/admin/**`. The login and checkout routes are public. Rate limiting, customer identity, and a secure order lookup design are still needed before a production launch with real customer data.

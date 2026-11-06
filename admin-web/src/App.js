@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-const catalogUrl = process.env.REACT_APP_CATALOG_API || 'http://localhost:8081';
-const sourcingUrl = process.env.REACT_APP_SOURCING_API || 'http://localhost:8082';
-const orderUrl = process.env.REACT_APP_ORDER_API || 'http://localhost:8083';
-const authUrl = process.env.REACT_APP_AUTH_API || 'http://localhost:8084';
+const catalogUrl = process.env.REACT_APP_CATALOG_API || 'https://industrial-catalog-1057772201167.asia-southeast1.run.app';
+const sourcingUrl = process.env.REACT_APP_SOURCING_API || 'https://industrial-sourcing-1057772201167.asia-southeast1.run.app';
+const orderUrl = process.env.REACT_APP_ORDER_API || 'https://industrial-orders-1057772201167.asia-southeast1.run.app';
+const authUrl = process.env.REACT_APP_AUTH_API || 'https://industrial-auth-1057772201167.asia-southeast1.run.app';
 const nextOrderStatus = { PLACED: ['CONFIRMED', 'CANCELLED'], CONFIRMED: ['PACKING', 'CANCELLED'], PACKING: ['OUT_FOR_DELIVERY', 'CANCELLED'], OUT_FOR_DELIVERY: ['DELIVERED'] };
 const newProduct = { sku: '', name: '', category: '', description: '', unit: 'piece', priceMinor: 0, imageUrl: '', active: true };
 const newVendor = { name: '', email: '', phone: '', active: true };

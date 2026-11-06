@@ -16,16 +16,16 @@ android {
     }
     buildTypes {
         debug {
-            val url = providers.gradleProperty("catalogApiUrl").orElse("http://10.0.2.2:8081/").get()
+            val url = providers.gradleProperty("catalogApiUrl").orElse("https://industrial-catalog-1057772201167.asia-southeast1.run.app/").get()
             buildConfigField("String", "CATALOG_API_URL", "\"$url\"")
-            val orderUrl = providers.gradleProperty("orderApiUrl").orElse("http://10.0.2.2:8083/").get()
+            val orderUrl = providers.gradleProperty("orderApiUrl").orElse("https://industrial-orders-1057772201167.asia-southeast1.run.app/").get()
             buildConfigField("String", "ORDER_API_URL", "\"$orderUrl\"")
         }
         release {
             isMinifyEnabled = false
-            val url = providers.gradleProperty("catalogApiUrl").orElse("https://api.example.invalid/").get()
+            val url = providers.gradleProperty("catalogApiUrl").orElse("https://industrial-catalog-1057772201167.asia-southeast1.run.app/").get()
             buildConfigField("String", "CATALOG_API_URL", "\"$url\"")
-            val orderUrl = providers.gradleProperty("orderApiUrl").orElse("https://orders.example.invalid/").get()
+            val orderUrl = providers.gradleProperty("orderApiUrl").orElse("https://industrial-orders-1057772201167.asia-southeast1.run.app/").get()
             buildConfigField("String", "ORDER_API_URL", "\"$orderUrl\"")
         }
     }

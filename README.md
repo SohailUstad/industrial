@@ -17,6 +17,10 @@ The services own separate databases. `productId` in the sourcing service is a re
 
 The checked GCP account, project, Neon prerequisites, deployment order, and Cloud Run URL command are in [docs/deployment-gcp-neon.md](docs/deployment-gcp-neon.md).
 
+The Android and React apps now use the public Cloud Run URLs by default. The Android app calls catalog and orders; the React admin app calls auth, catalog, sourcing, and orders. The hosted catalog starts empty, so add products in the admin app before browsing or checking out as a customer. Admin credentials are stored in GCP Secret Manager, not in this repository.
+
+To use the hosted backend from a fresh terminal, run `npm start` in `admin-web`; its default URLs already point at Cloud Run. The admin web app is served locally at `http://localhost:3000`. Open `customer-android` in Android Studio and run the debug app, or install `customer-android/app/build/outputs/apk/debug/app-debug.apk`. Both Android build types use the same hosted API defaults.
+
 To check the signed-in Neon organization's plan and project count, run `python scripts/neon_status.py` from this folder. This read-only helper uses the Neon CLI login, downloads the CLI through `npx` if needed, and accepts `--org-id` when multiple organizations are available. Use `--json` for machine-readable output. Per-project compute, storage, and transfer usage is available in the Neon Console.
 
 ## Run locally
@@ -60,11 +64,11 @@ npm start
 
 Sign in to the admin web app as `admin` with the password set in the auth-service terminal. The auth service issues a 15-minute RS256 JWT. The web app holds it in memory and sends it as a Bearer token to the three admin APIs. Restarting the local auth service generates a new development key and invalidates existing tokens.
 
-Open `customer-android` as a separate project in Android Studio. The emulator uses `10.0.2.2:8081` for the catalog and `10.0.2.2:8083` for orders. The `demo` catalog profile loads eight sample products locally; omit it when entering your own catalog.
+Open `customer-android` as a separate project in Android Studio. Debug and release builds use the deployed HTTPS catalog and order URLs by default. To point an Android build at local services, pass `-PcatalogApiUrl=http://10.0.2.2:8081/ -PorderApiUrl=http://10.0.2.2:8083/`. The `demo` catalog profile loads eight sample products locally; omit it when entering your own catalog.
 
-For a command-line Android build, set `JAVA_HOME` to JDK 21 and `ANDROID_HOME` to your Android SDK, then run `customer-android\gradlew.bat :app:assembleDebug`. A release build requires both `-PcatalogApiUrl=https://your-catalog-host/` and `-PorderApiUrl=https://your-order-host/`.
+For a command-line Android build, set `JAVA_HOME` to JDK 21 and `ANDROID_HOME` to your Android SDK, then run `customer-android\gradlew.bat :app:assembleDebug`. Override either URL with `-PcatalogApiUrl=...` or `-PorderApiUrl=...` when needed.
 
-The local services use in-memory H2 and reset on restart. The planned hosted database is Neon PostgreSQL. Create separate catalog, sourcing, and orders databases and roles, then set `SPRING_PROFILES_ACTIVE=postgres`, a Neon JDBC `DB_URL`, `DB_USER`, and `DB_PASSWORD` separately for each service. Flyway creates the tables. The order service also needs `CATALOG_API_URL` when the catalog is not on localhost.
+The local services use in-memory H2 and reset on restart. The deployed services use separate catalog, sourcing, and orders databases in Neon PostgreSQL. Their configuration uses `SPRING_PROFILES_ACTIVE=postgres`, separate Neon credentials, and `CATALOG_API_URL` for checkout. Flyway creates the tables.
 
 ## Current scope
 
